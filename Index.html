@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SuperWeb 🚀 </title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+    body {
+      margin: 0;
+      background-color: #0f172a;
+      color: #f8fafc;
+    }
+    
+    /* BARRA DE PESTAÑAS DEL NAVEGADOR (Estilo Chrome) */
+    .tab-bar {
+      background: #020617;
+      display: flex;
+      align-items: center;
+      padding: 6px 6px 0 6px;
+      overflow-x: auto;
+      border-bottom: 1px solid #1e293b;
+      gap: 4px;
+    }
+    .tab-bar::-webkit-scrollbar {
+      height: 4px;
+    }
+    .tab-bar::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 2px;
+    }
+    .browser-tab {
+      background: #1e293b;
+      color: #94a3b8;
+      padding: 8px 14px;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 160px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      border-top: 2px solid transparent;
+    }
+    .browser-tab.active {
+      background: #0f172a;
+      color: #f8fafc;
+      border-top-color: #3b82f6;
+      border-left: 1px solid #1e293b;
+      border-right: 1px solid #1e293b;
+    }
+    .browser-tab:hover {
+      background: #283548;
+      color: #fff;
+    }
+    .tab-close {
+      font-size: 12px;
+      padding: 2px 5px;
+      border-radius: 50%;
+    }
+    .tab-close:hover {
+      background: #ef4444;
+      color: white;
+    }
+    .btn-nueva- pestaña {
+      background: transparent;
+      color: #38bdf8;
+      border: none;
+      font-size: 18px;
+      padding: 4px 12px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .btn-nueva-pesaña:hover {
+      color: #60a5fa;
+    }
+
+    /* BARRA DE DIRECCIONES */
+    .barra-navegador {
+      background: #090d16;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: center;
+      position: relative;
+      border-bottom: 1px solid #1e293b;
+    }
+    .buscador-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+    }
+    .input-buscador {
+      width: 100%;
+      padding: 8px 15px;
+      background: #1e293b;
+      color: white;
+      border: 1px solid #334155;
+      border-radius: 20px;
+      font-size: 14px;
+      outline: none;
+    }
+    .input-buscador:focus {
+      border-color: #3b82f6;
+    }
+    .sugerencias-box {
+      position: absolute;
+      top: 40px;
+      left: 0;
+      width: 100%;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 100;
+      display: none;
+    }
+    .sugerencia-item {
+      padding: 10px 15px;
+      cursor: pointer;
+      border-bottom: 1px solid #334155;
+      font-size: 14px;
+    }
+    .sugerencia-item:hover {
+      background: #334155;
+      color: #38bdf8;
+    }
+
+    header {
+      background-color: #1e293b;
+      padding: 0.8rem;
+      text-align: center;
+      border-bottom: 2px solid #334155;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+    header p {
+      margin: 4px 0 0 0;
+      font-size: 13px;
+      color: #94a3b8;
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      background: #1e293b;
+      gap: 10px;
+      padding: 8px;
+    }
+    nav button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+    nav button:hover {
+      background: #2563eb;
+    }
+    .seccion {
+      display: none;
+      padding: 20px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .activa {
+      display: block;
+    }
+    .tarjeta {
+      background: #1e293b;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid #334155;
+    }
+    .tarjeta h3 {
+      margin-top: 0;
+      color: #38bdf8;
+    }
+    .tarjeta p {
+      color: #cbd5e1;
+      font-size: 14px;
+    }
+    .acciones {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .btn-editar {
+      background-color: #f59e0b;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn-eliminar {
+      background-color: #ef4444;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn-visitar {
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .btn-visitar:hover {
+      background-color: #2563eb;
+    }
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      margin-bottom: 15px;
+      background: #0f172a;
+      color: white;
+      border: 1px solid #334155;
+      border-radius: 4px;
+    }
+    
+    /* Panel de Studio */
+    .studio-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      height: 500px;
+      margin-top: 10px;
+    }
+    @media (max-width: 768px) {
+      .studio-grid {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+    }
+    .editor-container, .visor-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    textarea#textarea-codigo {
+      flex-grow: 1;
+      font-family: monospace;
+      font-size: 14px;
+      color: #38bdf8;
+      resize: none;
+    }
+    iframe.studio-iframe {
+      width: 100%;
+      flex-grow: 1;
+      background: #ffffff;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      min-height: 300px;
+    }
+    .barratitulo {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    .btn-play {
+      background-color: #10b981;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn-play:hover {
+      background-color: #059669;
+    }
+    .btn-guardar {
+      background-color: #6366f1;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BARRA DE PESTAÑAS MÚLTIPLES (Hasta 99+) -->
+  <div class="tab-bar" id="tab-bar">
+    <div id="tabs-container" style="display: flex; gap: 4px;"></div>
+    <button class="btn-nueva-pestaña" onclick="crearPestaña()" title="Nueva pestaña">+</button>
+  </div>
+
+  <header>
+    <h1>SuperWeb 🚀</h1>
+    <p>Navegador Web Multi-Pestaña y Studio de Creación</p>
+  </header>
+
+  <!-- BARRA DE DIRECCIONES / BUSCADOR INTELIGENTE -->
+  <div class="barra-navegador">
+    <div class="buscador-wrapper">
+      <input type="text" id="input-buscador" class="input-buscador" placeholder="🔍 Buscar página web..." oninput="filtrarSugerencias()">
+      <div id="sugerencias-box" class="sugerencias-box"></div>
+    </div>
+  </div>
+
+  <nav>
+    <button onclick="cambiarSeccionActiva('inicio')">🏠 Inicio</button>
+    <button onclick="cambiarSeccionActiva('mis-webs')">📁 Mis Webs</button>
+    <button onclick="cambiarSeccionActiva('studio')">🛠️ Studio</button>
+  </nav>
+
+  <!-- PESTAÑA 1: INICIO (FEED PUBLICO COMPACTO) -->
+  <section id="inicio" class="seccion activa">
+    <h2>Páginas Publicadas Recientemente</h2>
+    <div id="feed-articulos"></div>
+  </section>
+
+  <!-- PESTAÑA 2: MIS WEBS -->
+  <section id="mis-webs" class="seccion">
+    <h2>Panel de Administración: Mis Webs</h2>
+    <div id="lista-mis-webs"></div>
+  </section>
+
+  <!-- PESTAÑA 3: STUDIO -->
+  <section id="studio" class="seccion">
+    <h2 id="titulo-studio">Studio de Páginas Web</h2>
+    
+    <label for="input-titulo">Título de la Página:</label>
+    <input type="text" id="input-titulo" placeholder="Ej: Mi blog personal o artículo...">
+
+    <label for="input-descripcion">Descripción Corta:</label>
+    <input type="text" id="input-descripcion" placeholder="Ej: Un espacio para compartir ideas y proyectos.">
+
+    <div class="studio-grid">
+      <!-- Columna Izquierda: Código -->
+      <div class="editor-container">
+        <div class="barratitulo">
+          <span><strong>Código (HTML/JS/CSS):</strong></span>
+          <button class="btn-play" onclick="ejecutarCodigoStudio()">▶️ Ejecutar</button>
+        </div>
+        <textarea id="textarea-codigo" placeholder="Escribe tu código HTML completo aquí..."></textarea>
+      </div>
+
+      <!-- Columna Derecha: Visor de Studio -->
+      <div class="visor-container">
+        <div class="barratitulo">
+          <span><strong>Vista Previa:</strong></span>
+        </div>
+        <iframe id="pantalla-studio" class="studio-iframe" title="Visor Studio"></iframe>
+      </div>
+    </div>
+
+    <button class="btn-guardar" onclick="guardarEnStudio()">💾 Guardar y Publicar</button>
+  </section>
+
+  <script>
+    // --- SISTEMA DE MÚLTIPLES PESTAÑAS (Hasta 99+) ---
+    let pestañas = JSON.parse(localStorage.getItem('superweb_pestañas')) || [
+      { id: 1, titulo: 'Nueva Pestaña', seccion: 'inicio' }
+    ];
+    let pestañaActivaId = Number(localStorage.getItem('superweb_pestana_activa')) || pestañas[0].id;
+    let idEnEdicion = null;
+
+    function guardarEstadoPestañas() {
+      localStorage.setItem('superweb_pestañas', JSON.stringify(pestañas));
+      localStorage.setItem('superweb_pestana_activa', pestañaActivaId);
+    }
+
+    function renderizarPestañas() {
+      const contenedor = document.getElementById('tabs-container');
+      contenedor.innerHTML = '';
+
+      pestañas.forEach(tab => {
+        const esActiva = tab.id === pestañaActivaId ? 'active' : '';
+        contenedor.innerHTML += `
+          <div class="browser-tab ${esActiva}" onclick="seleccionarPestaña(${tab.id})" title="${tab.titulo}">
+            <span style="overflow: hidden; text-overflow: ellipsis;">${tab.titulo}</span>
+            ${pestañas.length > 1 ? `<span class="tab-close" onclick="cerrarPestaña(event, ${tab.id})">✕</span>` : ''}
+          </div>
+        `;
+      });
+      guardarEstadoPestañas();
+    }
+
+    function crearPestaña() {
+      if (pestañas.length >= 99) {
+        alert("¡Has alcanzado el límite de 99 pestañas abiertas!");
+        return;
+      }
+      const nuevaId = Date.now();
+      pestañas.push({ id: nuevaId, titulo: 'Nueva Pestaña', seccion: 'inicio' });
+      pestañaActivaId = nuevaId;
+      renderizarPestañas();
+      cambiarSeccionActiva('inicio');
+    }
+
+    function seleccionarPestaña(id) {
+      pestañaActivaId = id;
+      const tab = pestañas.find(t => t.id === id);
+      if (tab) {
+        renderizarPestañas();
+        mostrarSeccionDirecta(tab.seccion);
+      }
+    }
+
+    function cerrarPestaña(event, id) {
+      event.stopPropagation();
+      if (pestañas.length === 1) return; // No cerrar la última
+
+      pestañas = pestañas.filter(t => t.id !== id);
+      if (pestañaActivaId === id) {
+        pestañaActivaId = pestañas[pestañas.length - 1].id;
+        const tab = pestañas.find(t => t.id === pestañaActivaId);
+        mostrarSeccionDirecta(tab.seccion);
+      }
+      renderizarPestañas();
+    }
+
+    function cambiarSeccionActiva(seccionId) {
+      const tabActual = pestañas.find(t => t.id === pestañaActivaId);
+      if (tabActual) {
+        tabActual.seccion = seccionId;
+        if (seccionId === 'inicio') tabActual.titulo = 'Inicio - SuperWeb';
+        if (seccionId === 'mis-webs') tabActual.titulo = 'Mis Webs';
+        if (seccionId === 'studio') tabActual.titulo = 'Studio Editor';
+        renderizarPestañas();
+      }
+      mostrarSeccionDirecta(seccionId);
+    }
+
+    function mostrarSeccionDirecta(seccionId) {
+      document.querySelectorAll('.seccion').forEach(sec => sec.classList.remove('activa'));
+      document.getElementById(seccionId).classList.add('activa');
+
+      if (seccionId === 'inicio') cargarInicio();
+      if (seccionId === 'mis-webs') cargarMisWebs();
+    }
+
+    // --- BUSCADOR INTELIGENTE / BARRA DE DIRECCIONES ---
+    function filtrarSugerencias() {
+      const texto = document.getElementById('input-buscador').value.toLowerCase().trim();
+      const cajaSugerencias = document.getElementById('sugerencias-box');
+      cajaSugerencias.innerHTML = '';
+
+      if (texto === '') {
+        cajaSugerencias.style.display = 'none';
+        return;
+      }
+
+      const publicaciones = JSON.parse(localStorage.getItem('superweb_articulos')) || [];
+      const coincidencias = publicaciones.filter(art => art.titulo.toLowerCase().includes(texto));
+
+      if (coincidencias.length === 0) {
+        cajaSugerencias.style.display = 'block';
+        cajaSugerencias.innerHTML = '<div class="sugerencia-item" style="color: #94a3b8;">No se encontraron páginas</div>';
+        return;
+      }
+
+      cajaSugerencias.style.display = 'block';
+      coincidencias.forEach(art => {
+        cajaSugerencias.innerHTML += `
+          <div class="sugerencia-item" onclick="abrirPaginaCompleta(${art.id})">
+            🌐 <strong>${art.titulo}</strong>
+          </div>
+        `;
+      });
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.buscador-wrapper')) {
+        document.getElementById('sugerencias-box').style.display = 'none';
+      }
+    });
+
+    // --- STUDIO Y EJECUCIÓN ---
+    function ejecutarCodigoStudio() {
+      const codigo = document.getElementById('textarea-codigo').value;
+      const iframe = document.getElementById('pantalla-studio');
+      const docFrame = iframe.contentDocument || iframe.contentWindow.document;
+
+      docFrame.open();
+      docFrame.write(codigo);
+      docFrame.close();
+    }
+
+    function cargarInicio() {
+      const feed = document.getElementById('feed-articulos');
+      feed.innerHTML = '';
+      const publicaciones = JSON.parse(localStorage.getItem('superweb_articulos')) || [];
+
+      if (publicaciones.length === 0) {
+        feed.innerHTML = '<p>No hay páginas publicadas aún. ¡Sé el primero en crear una en Studio!</p>';
+        return;
+      }
+
+      publicaciones.forEach(art => {
+        feed.innerHTML += `
+          <article class="tarjeta">
+            <h3>${art.titulo}</h3>
+            <p>${art.descripcion || 'Sin descripción'}</p>
+            <button class="btn-visitar" onclick="abrirPaginaCompleta(${art.id})">🌐 Visitar Página</button>
+          </article>
+        `;
+      });
+    }
+
+    function abrirPaginaCompleta(id) {
+      const publicaciones = JSON.parse(localStorage.getItem('superweb_articulos')) || [];
+      const articulo = publicaciones.find(item => item.id === id);
+
+      if (articulo) {
+        const blob = new Blob([articulo.contenido], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        document.getElementById('sugerencias-box').style.display = 'none';
+        document.getElementById('input-buscador').value = '';
+      }
+    }
+
+    function cargarMisWebs() {
+      const contenedor = document.getElementById('lista-mis-webs');
+      contenedor.innerHTML = '';
+      const publicaciones = JSON.parse(localStorage.getItem('superweb_articulos')) || [];
+
+      if (publicaciones.length === 0) {
+        contenedor.innerHTML = '<p>No tienes páginas creadas.</p>';
+        return;
+      }
+
+      publicaciones.forEach(art => {
+        contenedor.innerHTML += `
+          <div class="tarjeta">
+            <h3>${art.titulo}</h3>
+            <p>${art.descripcion || 'Sin descripción'}</p>
+            <div class="acciones">
+              <button class="btn-editar" onclick="revisarEnStudio(${art.id})">✏️ Editar en Studio</button>
+              <button class="btn-eliminar" onclick="eliminarWeb(${art.id})">🗑️ Eliminar</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function revisarEnStudio(id) {
+      const publicaciones = JSON.parse(localStorage.getItem('superweb_articulos')) || [];
+      const articulo = publicaciones.find(item => item.id === id);
+
+      if (articulo) {
+        document.getElementById('input-titulo').value = articulo.titulo;
+        document.getElementById('input-descripcion').value = articulo.descripcion || '';
+        document.getElementById('textarea-codigo').value = articulo.contenido;
+        idEnEdicion = articulo.id;
+        document.getElementById('titulo-studio').innerText = "Editando Página en Studio";
+        cambiarSeccionActiva('studio');
+        ejecutarCodigoStudio();
+      }
+    }
+
+    function guardarEnStudio() {
+      const titulo = document.getElementById('input-titulo').value.trim();
+      const descripcion = document.getElementById('input-descripcion').value.trim();
+      const contenido = document.getElementById('textarea-codigo').value.trim();
+
+      if (!titulo || !contenido) {
+        alert("Por favor completa al menos el título y el código.");
+        return;
+      }
+
+      let publicaciones = JSON.parse(localStorage.getItem('superweb_articulos')) || [];
+
+      if (idEnEdicion !== null) {
+        publicaciones = publicaciones.map(item => {
+          if (item.id === idEnEdicion) {
+            return { ...item, titulo, descripcion, contenido };
+          }
+          return item;
+        });
+        alert("¡Página actualizada correctamente!");
+        idEnEdicion = null;
+      } else {
+        const nuevoProyecto = {
+          id: Date.now(),
+          titulo,
+          descripcion,
+          contenido
+        };
+        publicaciones.push(nuevoProyecto);
+        alert("¡Página guardada y publicada!");
+      }
+
+      localStorage.setItem('superweb_articulos', JSON.stringify(publicaciones));
+      
+      document.getElementById('input-titulo').value = '';
+      document.getElementById('input-descripcion').value = '';
+      document.getElementById('textarea-codigo').value = '';
+      document.getElementById('titulo-studio').innerText = "Studio de Páginas Web";
+      cambiarSeccionActiva('mis-webs');
+    }
+
+    function eliminarWeb(id) {
+      if (confirm("¿Seguro que deseas eliminar esta página?")) {
+        let publicaciones = JSON.parse(localStorage.getItem('superweb_articulos')) || [];
+        publicaciones = publicaciones.filter(item => item.id !== id);
+        localStorage.setItem('superweb_articulos', JSON.stringify(publicaciones));
+        cargarMisWebs();
+      }
+    }
+
+    // Inicialización al cargar la página
+    renderizarPestañas();
+    const pestañaActual = pestañas.find(t => t.id === pestañaActivaId) || pestañas[0];
+    mostrarSeccionDirecta(pestañaActual.seccion);
+  </script>
+</body>
+</html
