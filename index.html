@@ -69,7 +69,7 @@
       background: #ef4444;
       color: white;
     }
-    .btn-nueva- pestaña {
+    .btn-nueva-pestaña {
       background: transparent;
       color: #38bdf8;
       border: none;
@@ -78,7 +78,7 @@
       cursor: pointer;
       font-weight: bold;
     }
-    .btn-nueva-pesaña:hover {
+    .btn-nueva-pestaña:hover {
       color: #60a5fa;
     }
 
@@ -306,7 +306,7 @@
 </head>
 <body>
 
-  <!-- BARRA DE PESTAÑAS MÚLTIPLES (Hasta 99+) -->
+  <!-- BARRA DE PESTAÑAS MÚLTIPLES -->
   <div class="tab-bar" id="tab-bar">
     <div id="tabs-container" style="display: flex; gap: 4px;"></div>
     <button class="btn-nueva-pestaña" onclick="crearPestaña()" title="Nueva pestaña">+</button>
@@ -314,7 +314,7 @@
 
   <header>
     <h1>SuperWeb 🚀</h1>
-    <p>Navegador Web Multi-Pestaña y Studio de Creación</p>
+    <p>Navegador Web Multi-Pestaña y Studio de Creación Global</p>
   </header>
 
   <!-- BARRA DE DIRECCIONES / BUSCADOR INTELIGENTE -->
@@ -331,16 +331,16 @@
     <button onclick="cambiarSeccionActiva('studio')">🛠️ Studio</button>
   </nav>
 
-  <!-- PESTAÑA 1: INICIO (FEED PUBLICO COMPACTO) -->
+  <!-- PESTAÑA 1: INICIO -->
   <section id="inicio" class="seccion activa">
-    <h2>Páginas Publicadas Recientemente</h2>
-    <div id="feed-articulos"></div>
+    <h2>Páginas Publicadas Globalmente</h2>
+    <div id="feed-articulos">Cargando publicaciones globales...</div>
   </section>
 
   <!-- PESTAÑA 2: MIS WEBS -->
   <section id="mis-webs" class="seccion">
     <h2>Panel de Administración: Mis Webs</h2>
-    <div id="lista-mis-webs"></div>
+    <div id="lista-mis-webs">Cargando tus webs...</div>
   </section>
 
   <!-- PESTAÑA 3: STUDIO -->
@@ -372,11 +372,16 @@
       </div>
     </div>
 
-    <button class="btn-guardar" onclick="guardarEnStudio()">💾 Guardar y Publicar</button>
+    <button class="btn-guardar" onclick="guardarEnStudio()">💾 Guardar y Publicar Globalmente</button>
   </section>
 
   <script>
-    // --- SISTEMA DE MÚLTIPLES PESTAÑAS (Hasta 99+) ---
+    // --- CONFIGURACIÓN JSONBIN.IO ---
+    const BIN_ID = '6ae7b0aaac6210605a6454c6';
+    const API_KEY = '$2a$10$f2EuA6ubrwz7RU8ektbbV.xBsX2vSy7MF736KP7iKiqwc3iczwc6y';
+    const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
+    // --- SISTEMA DE MÚLTIPLES PESTAÑAS ---
     let pestañas = JSON.parse(localStorage.getItem('superweb_pestañas')) || [
       { id: 1, titulo: 'Nueva Pestaña', seccion: 'inicio' }
     ];
@@ -427,7 +432,7 @@
 
     function cerrarPestaña(event, id) {
       event.stopPropagation();
-      if (pestañas.length === 1) return; // No cerrar la última
+      if (pestañas.length === 1) return;
 
       pestañas = pestañas.filter(t => t.id !== id);
       if (pestañaActivaId === id) {
@@ -458,8 +463,22 @@
       if (seccionId === 'mis-webs') cargarMisWebs();
     }
 
-    // --- BUSCADOR INTELIGENTE / BARRA DE DIRECCIONES ---
-    function filtrarSugerencias() {
+    // --- CONEXIÓN CON JSONBIN PARA OBTENER ARTÍCULOS ---
+    async function obtenerArticulosRemotos() {
+      try {
+        const res = await fetch(`${JSONBIN_URL}/latest`, {
+          headers: { 'X-Master-Key': API_KEY }
+        });
+        const data = await res.json();
+        return data.record || [];
+      } catch (error) {
+        console.error("Error al conectar con JSONBin:", error);
+        return [];
+      }
+    }
+
+    // --- BUSCADOR INTELIGENTE ---
+    async function filtrarSugerencias() {
       const texto = document.getElementById('input-buscador').value.toLowerCase().trim();
       const cajaSugerencias = document.getElementById('sugerencias-box');
       cajaSugerencias.innerHTML = '';
@@ -469,7 +488,7 @@
         return;
       }
 
-      const publicaciones = JSON.parse(localStorage.getItem('superweb_articulos')) || [];
+      const publicaciones = await obtenerArticulosRemotos();
       const coincidencias = publicaciones.filter(art => art.titulo.toLowerCase().includes(texto));
 
       if (coincidencias.length === 0) {
@@ -505,16 +524,17 @@
       docFrame.close();
     }
 
-    function cargarInicio() {
+    async function cargarInicio() {
       const feed = document.getElementById('feed-articulos');
-      feed.innerHTML = '';
-      const publicaciones = JSON.parse(localStorage.getItem('superweb_articulos')) || [];
+      feed.innerHTML = 'Cargando publicaciones...';
+      const publicaciones = await obtenerArticulosRemotos();
 
       if (publicaciones.length === 0) {
         feed.innerHTML = '<p>No hay páginas publicadas aún. ¡Sé el primero en crear una en Studio!</p>';
         return;
       }
 
+      feed.innerHTML = '';
       publicaciones.forEach(art => {
         feed.innerHTML += `
           <article class="tarjeta">
@@ -526,8 +546,8 @@
       });
     }
 
-    function abrirPaginaCompleta(id) {
-      const publicaciones = JSON.parse(localStorage.getItem('superweb_articulos')) || [];
+    async function abrirPaginaCompleta(id) {
+      const publicaciones = await obtenerArticulosRemotos();
       const articulo = publicaciones.find(item => item.id === id);
 
       if (articulo) {
@@ -539,16 +559,17 @@
       }
     }
 
-    function cargarMisWebs() {
+    async function cargarMisWebs() {
       const contenedor = document.getElementById('lista-mis-webs');
-      contenedor.innerHTML = '';
-      const publicaciones = JSON.parse(localStorage.getItem('superweb_articulos')) || [];
+      contenedor.innerHTML = 'Cargando tus páginas...';
+      const publicaciones = await obtenerArticulosRemotos();
 
       if (publicaciones.length === 0) {
         contenedor.innerHTML = '<p>No tienes páginas creadas.</p>';
         return;
       }
 
+      contenedor.innerHTML = '';
       publicaciones.forEach(art => {
         contenedor.innerHTML += `
           <div class="tarjeta">
@@ -563,8 +584,8 @@
       });
     }
 
-    function revisarEnStudio(id) {
-      const publicaciones = JSON.parse(localStorage.getItem('superweb_articulos')) || [];
+    async function revisarEnStudio(id) {
+      const publicaciones = await obtenerArticulosRemotos();
       const articulo = publicaciones.find(item => item.id === id);
 
       if (articulo) {
@@ -578,7 +599,7 @@
       }
     }
 
-    function guardarEnStudio() {
+    async function guardarEnStudio() {
       const titulo = document.getElementById('input-titulo').value.trim();
       const descripcion = document.getElementById('input-descripcion').value.trim();
       const contenido = document.getElementById('textarea-codigo').value.trim();
@@ -588,7 +609,7 @@
         return;
       }
 
-      let publicaciones = JSON.parse(localStorage.getItem('superweb_articulos')) || [];
+      let publicaciones = await obtenerArticulosRemotos();
 
       if (idEnEdicion !== null) {
         publicaciones = publicaciones.map(item => {
@@ -597,7 +618,7 @@
           }
           return item;
         });
-        alert("¡Página actualizada correctamente!");
+        alert("¡Página actualizada globalmente!");
         idEnEdicion = null;
       } else {
         const nuevoProyecto = {
@@ -607,31 +628,55 @@
           contenido
         };
         publicaciones.push(nuevoProyecto);
-        alert("¡Página guardada y publicada!");
+        alert("¡Página guardada y publicada en la red global!");
       }
 
-      localStorage.setItem('superweb_articulos', JSON.stringify(publicaciones));
-      
-      document.getElementById('input-titulo').value = '';
-      document.getElementById('input-descripcion').value = '';
-      document.getElementById('textarea-codigo').value = '';
-      document.getElementById('titulo-studio').innerText = "Studio de Páginas Web";
-      cambiarSeccionActiva('mis-webs');
+      // Enviar datos actualizados a JSONBin
+      try {
+        await fetch(JSONBIN_URL, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Master-Key': API_KEY
+          },
+          body: JSON.stringify(publicaciones)
+        });
+
+        document.getElementById('input-titulo').value = '';
+        document.getElementById('input-descripcion').value = '';
+        document.getElementById('textarea-codigo').value = '';
+        document.getElementById('titulo-studio').innerText = "Studio de Páginas Web";
+        cambiarSeccionActiva('mis-webs');
+      } catch (error) {
+        alert("Error al guardar en la base de datos global.");
+      }
     }
 
-    function eliminarWeb(id) {
-      if (confirm("¿Seguro que deseas eliminar esta página?")) {
-        let publicaciones = JSON.parse(localStorage.getItem('superweb_articulos')) || [];
+    async function eliminarWeb(id) {
+      if (confirm("¿Seguro que deseas eliminar esta página globalmente?")) {
+        let publicaciones = await obtenerArticulosRemotos();
         publicaciones = publicaciones.filter(item => item.id !== id);
-        localStorage.setItem('superweb_articulos', JSON.stringify(publicaciones));
-        cargarMisWebs();
+
+        try {
+          await fetch(JSONBIN_URL, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Master-Key': API_KEY
+            },
+            body: JSON.stringify(publicaciones)
+          });
+          cargarMisWebs();
+        } catch (error) {
+          alert("Error al eliminar el registro.");
+        }
       }
     }
 
-    // Inicialización al cargar la página web
+    // Inicialización al cargar la página
     renderizarPestañas();
     const pestañaActual = pestañas.find(t => t.id === pestañaActivaId) || pestañas[0];
     mostrarSeccionDirecta(pestañaActual.seccion);
   </script>
 </body>
-</html
+</html>
