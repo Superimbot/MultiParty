@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SuperWeb 🚀</title>
+  <title>SuperWeb - Plataforma Profesional</title>
   <style>
     :root {
       --primary-blue: #004488;
@@ -80,6 +80,20 @@
 
     .cta-btn:hover { opacity: 0.9; }
 
+    .play-btn {
+      background: #27ae60;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      font-size: 15px;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+
+    .play-btn:hover { background: #219653; }
+
     .content-section {
       display: none;
       max-width: 1000px;
@@ -148,10 +162,7 @@
       margin-right: 5px;
     }
 
-    .card-btn.danger {
-      background-color: #c0392b;
-    }
-
+    .card-btn.danger { background-color: #c0392b; }
     .card-btn:hover { opacity: 0.9; }
 
     .studio-box {
@@ -193,7 +204,7 @@
     </div>
   </div>
 
-  <!-- PESTAÑA 1: INICIO (Red Global Protegida) -->
+  <!-- PESTAÑA 1: INICIO -->
   <div id="inicioTab" class="content-section active">
     <div class="hero">
       <h1>Red Global de SuperWeb</h1>
@@ -215,13 +226,11 @@
     </div>
   </div>
 
-  <!-- PESTAÑA 2: MIS WEBS (LocalStorage) -->
+  <!-- PESTAÑA 2: MIS WEBS -->
   <div id="misWebsTab" class="content-section">
     <div class="section-title">Mis Páginas (Guardadas en tu Dispositivo)</div>
     <input type="text" id="searchLocal" class="search-bar" placeholder="🔍 Buscar en mis proyectos..." oninput="filtrarMisWebs()">
-    <div class="cards-grid" id="misWebsContainer">
-      <!-- Se cargan desde LocalStorage -->
-    </div>
+    <div class="cards-grid" id="misWebsContainer"></div>
   </div>
 
   <!-- PESTAÑA 3: STUDIO -->
@@ -239,28 +248,26 @@
       <label><strong>Código HTML de tu Web:</strong></label>
       <textarea id="webCode" class="code-editor" rows="8" placeholder="&lt;h1&gt;Hola Mundo&lt;/h1&gt;"></textarea>
       
-      <button class="cta-btn" id="saveBtn" onclick="publicarYGuardar()">Publicar Proyecto</button>
+      <div style="display: flex; gap: 10px;">
+        <button class="cta-btn" id="saveBtn" onclick="publicarYGuardar()">Publicar Proyecto</button>
+        <button class="play-btn" onclick="ejecutarCodigo()">▶️ Probar / Previsualizar</button>
+      </div>
     </div>
   </div>
 
+  <!-- LÓGICA DE SUPERWEB -->
   <script>
     const BIN_ID = "6ae7b0aaac6210605a6454c6";
     const API_KEY = "$2a$10$f2EuA6ubrwz7RU8ektbbV.xBsX2vSy7MF736KP7iKiqwc3iczwc6y";
-    
-    // Tu contraseña maestra secreta integrada
     const ADMIN_PASSWORD = "981726378476567382987364563789847567483902938765421345678293874532345678987653627346738958734954326784636675367849367485948376546783946547389984765637894875647839045698754378948576473894857647839847647839487546738945876748387654335678904569875432456789854763ewr56563w478otu66589p384u2187i94387327634897p4897434w231887876743265784953427189428907634213248934290837674321873245894590´34289021332487543"; 
+    
     let esAdmin = false;
-
     let proyectosGlobalesCache = [];
     let proyectosLocalesCache = [];
 
     function switchTab(evt, tabId) {
-      const sections = document.querySelectorAll('.content-section');
-      sections.forEach(sec => sec.classList.remove('active'));
-
-      const buttons = document.querySelectorAll('.nav-btn');
-      buttons.forEach(btn => btn.classList.remove('active'));
-
+      document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
       if (evt && evt.currentTarget) evt.currentTarget.classList.add('active');
 
@@ -280,12 +287,10 @@
 
     function renderizarMisWebs(proyectos) {
       const contenedor = document.getElementById('misWebsContainer');
-
       if (proyectos.length === 0) {
         contenedor.innerHTML = '<p>No tienes páginas creadas o no se encontraron resultados.</p>';
         return;
       }
-
       contenedor.innerHTML = '';
       proyectos.forEach((proj, idx) => {
         contenedor.innerHTML += `
@@ -294,6 +299,7 @@
             <div class="card-body">
               <p>${proj.desc}</p>
               <small style="color: #666;">Fecha: ${proj.fecha}</small><br><br>
+              <button class="card-btn" onclick="verWeb('${encodeURIComponent(proj.code)}')">Ver Web</button>
               <button class="card-btn" onclick="editarLocal(${idx})">Editar</button>
               <button class="card-btn danger" onclick="eliminarLocal(${idx})">Eliminar</button>
             </div>
@@ -304,21 +310,15 @@
 
     function filtrarMisWebs() {
       const query = document.getElementById('searchLocal').value.toLowerCase();
-      const filtrados = proyectosLocalesCache.filter(p => 
-        p.title.toLowerCase().includes(query) || p.desc.toLowerCase().includes(query)
-      );
-      renderizarMisWebs(filtrados);
+      renderizarMisWebs(proyectosLocalesCache.filter(p => p.title.toLowerCase().includes(query) || p.desc.toLowerCase().includes(query)));
     }
 
     function editarLocal(index) {
-      const proyectos = obtenerLocales();
-      const proj = proyectos[index];
-
+      const proj = obtenerLocales()[index];
       document.getElementById('editIndex').value = index;
       document.getElementById('webTitle').value = proj.title;
       document.getElementById('webDesc').value = proj.desc;
       document.getElementById('webCode').value = proj.code;
-
       document.getElementById('studioTitle').innerText = "Studio - Editando Proyecto";
       document.getElementById('saveBtn').innerText = "Actualizar Proyecto";
       switchTab(null, 'studioTab');
@@ -342,43 +342,45 @@
       document.getElementById('saveBtn').innerText = "Publicar Proyecto";
     }
 
+    function ejecutarCodigo() {
+      const code = document.getElementById('webCode').value;
+      if (!code.trim()) return alert("Escribe algo de código HTML primero.");
+      const win = window.open();
+      win.document.write(code);
+      win.document.close();
+    }
+
+    function verWeb(codigoCodificado) {
+      const win = window.open();
+      win.document.write(decodeURIComponent(codigoCodificado));
+      win.document.close();
+    }
+
     async function publicarYGuardar() {
       const title = document.getElementById('webTitle').value;
       const desc = document.getElementById('webDesc').value;
       const code = document.getElementById('webCode').value;
       const editIndex = document.getElementById('editIndex').value;
 
-      if (!title) {
-        alert("¡Ingresa un título antes de publicar!");
-        return;
-      }
+      if (!title) return alert("¡Ingresa un título antes de publicar!");
 
       const fecha = new Date().toLocaleDateString();
       const proyectoData = { title, desc, code, fecha };
 
       let locales = obtenerLocales();
-      if (editIndex === "-1") {
-        locales.push(proyectoData);
-      } else {
-        locales[editIndex] = proyectoData;
-      }
+      if (editIndex === "-1") locales.push(proyectoData);
+      else locales[editIndex] = proyectoData;
       localStorage.setItem('superweb_local_projects', JSON.stringify(locales));
 
       try {
-        const getRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-          headers: { 'X-Master-Key': API_KEY }
-        });
+        const getRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, { headers: { 'X-Master-Key': API_KEY } });
         const getData = await getRes.json();
         let listaProyectos = getData.record.projects || [];
-
         listaProyectos.push(proyectoData);
 
         await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Master-Key': API_KEY
-          },
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
           body: JSON.stringify({ projects: listaProyectos })
         });
 
@@ -396,9 +398,7 @@
     async function cargarRedGlobal() {
       const contenedor = document.getElementById('publicWebsContainer');
       try {
-        const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-          headers: { 'X-Master-Key': API_KEY }
-        });
+        const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, { headers: { 'X-Master-Key': API_KEY } });
         const data = await res.json();
         proyectosGlobalesCache = data.record.projects || [];
         renderizarRedGlobal(proyectosGlobalesCache);
@@ -409,23 +409,20 @@
 
     function renderizarRedGlobal(proyectos) {
       const contenedor = document.getElementById('publicWebsContainer');
-
       if (proyectos.length === 0) {
         contenedor.innerHTML = '<p>No hay proyectos compartidos en la red todavía.</p>';
         return;
       }
-
       contenedor.innerHTML = '';
       proyectos.forEach((proj, idx) => {
         let botonEliminarAdmin = esAdmin ? `<button class="card-btn danger" onclick="eliminarGlobal(${idx})">Eliminar (Admin)</button>` : '';
-
         contenedor.innerHTML += `
           <div class="card">
             <h3>${proj.title}</h3>
             <div class="card-body">
               <p>${proj.desc}</p>
               <small style="color: #666;">Publicado: ${proj.fecha}</small><br><br>
-              <button class="card-btn" onclick="alert('Código HTML:\\n\\n' + decodeURIComponent('${encodeURIComponent(proj.code)}'))">Ver Código</button>
+              <button class="card-btn" onclick="verWeb('${encodeURIComponent(proj.code)}')">Ver Web</button>
               ${botonEliminarAdmin}
             </div>
           </div>
@@ -435,61 +432,50 @@
 
     function filtrarRedGlobal() {
       const query = document.getElementById('searchGlobal').value.toLowerCase();
-      const filtrados = proyectosGlobalesCache.filter(p =>
-        p.title.toLowerCase().includes(query) || p.desc.toLowerCase().includes(query)
-      );
-      renderizarRedGlobal(filtrados);
+      renderizarRedGlobal(proyectosGlobalesCache.filter(p => p.title.toLowerCase().includes(query) || p.desc.toLowerCase().includes(query)));
     }
 
     function activarModoAdmin() {
-      if (esAdmin) {
-        alert("Ya estás en Modo Administrador.");
-        return;
-      }
+      if (esAdmin) return alert("Ya estás en Modo Administrador.");
       const pass = prompt("Introduce la contraseña de Administrador de SuperWeb:");
       if (pass === ADMIN_PASSWORD) {
         esAdmin = true;
-        alert("¡Modo Administrador activado con éxito! Ahora puedes ver los botones de eliminar en la Red Global.");
+        alert("¡Modo Administrador activado!");
         renderizarRedGlobal(proyectosGlobalesCache);
-      } else if (pass !== null) {
-        alert("Contraseña incorrecta.");
-      }
+      } else if (pass !== null) alert("Contraseña incorrecta.");
     }
 
     async function eliminarGlobal(index) {
-      if (confirm("¿Estás seguro de que deseas eliminar este proyecto de la Red Global como Administrador?")) {
+      if (confirm("¿Estás seguro de que deseas eliminar este proyecto de la Red Global?")) {
         try {
-          const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-            headers: { 'X-Master-Key': API_KEY }
-          });
+          const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, { headers: { 'X-Master-Key': API_KEY } });
           const data = await res.json();
           let listaProyectos = data.record.projects || [];
-
           listaProyectos.splice(index, 1);
 
           await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Master-Key': API_KEY
-            },
+            headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
             body: JSON.stringify({ projects: listaProyectos })
           });
 
-          alert("Proyecto eliminado de la Red Global con éxito.");
+          alert("Proyecto eliminado con éxito.");
           cargarRedGlobal();
         } catch (error) {
           console.error(error);
-          alert("Hubo un error al intentar eliminar el proyecto de la red.");
+          alert("Hubo un error al eliminar.");
         }
       }
     }
 
-    window.onload = function() {
-      cargarRedGlobal();
-    };
+    setInterval(() => {
+      if (document.getElementById('inicioTab').classList.contains('active')) cargarRedGlobal();
+    }, 10000);
+
+    window.onload = function() { cargarRedGlobal(); };
   </script>
 
 </body>
 </html>
+
 
