@@ -299,7 +299,7 @@
             <div class="card-body">
               <p>${proj.desc}</p>
               <small style="color: #666;">Fecha: ${proj.fecha}</small><br><br>
-              <button class="card-btn" onclick="verWeb('${encodeURIComponent(proj.code)}')">Ver Web</button>
+              <button class="card-btn" onclick="verWebLocalDesdeCache(${idx})">Ver Web</button>
               <button class="card-btn" onclick="editarLocal(${idx})">Editar</button>
               <button class="card-btn danger" onclick="eliminarLocal(${idx})">Eliminar</button>
             </div>
@@ -342,7 +342,7 @@
       document.getElementById('saveBtn').innerText = "Publicar Proyecto";
     }
 
-    // --- SISTEMA DE MODAL FLOTANTE PARA VISTA WEB PERFECTA ---
+    // --- SISTEMA DE MODAL FLOTANTE Y APERTURA DESDE CACHÉ ---
     function asegurarModalEnDOM() {
       let modal = document.getElementById('superWebModal');
       if (!modal) {
@@ -376,17 +376,33 @@
       doc.close();
     }
 
-    function verWeb(codigoCodificado) {
-      const codigoDecodificado = decodeURIComponent(codigoCodificado);
+    function verWebDesdeCache(index) {
+      const proj = proyectosGlobalesCache[index];
+      if (!proj || !proj.code) return alert("No se pudo cargar el código de este proyecto.");
       
       asegurarModalEnDOM();
-      document.getElementById('modalTitle').innerText = "Vista Completa de SuperWeb";
+      document.getElementById('modalTitle').innerText = proj.title + " - SuperWeb";
       const iframe = document.getElementById('modalIframe');
       document.getElementById('superWebModal').style.display = 'flex';
       
       const doc = iframe.contentDocument || iframe.contentWindow.document;
       doc.open();
-      doc.write(codigoDecodificado);
+      doc.write(proj.code);
+      doc.close();
+    }
+
+    function verWebLocalDesdeCache(index) {
+      const proj = proyectosLocalesCache[index];
+      if (!proj || !proj.code) return alert("No se pudo cargar el código de este proyecto.");
+      
+      asegurarModalEnDOM();
+      document.getElementById('modalTitle').innerText = proj.title + " - SuperWeb (Local)";
+      const iframe = document.getElementById('modalIframe');
+      document.getElementById('superWebModal').style.display = 'flex';
+      
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      doc.open();
+      doc.write(proj.code);
       doc.close();
     }
 
@@ -462,7 +478,7 @@
             <div class="card-body">
               <p>${proj.desc}</p>
               <small style="color: #666;">Publicado: ${proj.fecha}</small><br><br>
-              <button class="card-btn" onclick="verWeb('${encodeURIComponent(proj.code)}')">Ver Web</button>
+              <button class="card-btn" onclick="verWebDesdeCache(${idx})">Ver Web</button>
               ${botonEliminarAdmin}
             </div>
           </div>
