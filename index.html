@@ -342,7 +342,7 @@
       document.getElementById('saveBtn').innerText = "Publicar Proyecto";
     }
 
-    function ejecutarCodigo() {
+        function ejecutarCodigo() {
       const code = document.getElementById('webCode').value;
       if (!code.trim()) return alert("Escribe algo de código HTML primero.");
       const win = window.open();
@@ -353,6 +353,10 @@
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>Previsualización - SuperWeb</title>
+          <style>
+            /* Forzar que la previsualización use toda la pantalla y luzca natural */
+            body { margin: 0; background-color: #ffffff; }
+          </style>
         </head>
         <body>
           ${code}
@@ -372,6 +376,10 @@
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>Vista Previa - SuperWeb</title>
+          <style>
+            /* Eliminar márgenes raros de la ventana emergente */
+            body { margin: 0; background-color: #ffffff; }
+          </style>
         </head>
         <body>
           ${codigoDecodificado}
