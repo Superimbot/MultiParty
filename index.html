@@ -366,7 +366,7 @@
       win.document.close();
     }
 
-    function verWeb(codigoCodificado) {
+        function verWeb(codigoCodificado) {
       const win = window.open();
       const codigoDecodificado = decodeURIComponent(codigoCodificado);
       win.document.write(`
@@ -375,10 +375,27 @@
         <head>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Vista Previa - SuperWeb</title>
+          <title>Vista Completa - SuperWeb</title>
           <style>
-            /* Eliminar márgenes raros de la ventana emergente */
-            body { margin: 0; background-color: #ffffff; }
+            /* ESTO FORZA A QUE CUALQUIER CONTENEDOR LLENE LA PANTALLA */
+            body { 
+              margin: 0; 
+              background-color: #ffffff; 
+              display: flex;
+              justify-content: center;
+              align-items: flex-start;
+            }
+            /* Si el artículo tiene una caja central, la expandimos al 100% */
+            div, article, section {
+              max-width: 100% !important;
+              width: 100% !important;
+              box-shadow: none !important;
+              border: none !important;
+              border-radius: 0 !important;
+              margin: 0 !important;
+              padding: 30px !important;
+              box-sizing: border-box;
+            }
           </style>
         </head>
         <body>
@@ -387,7 +404,7 @@
         </html>
       `);
       win.document.close();
-    }
+        }
 
     async function publicarYGuardar() {
       const title = document.getElementById('webTitle').value;
