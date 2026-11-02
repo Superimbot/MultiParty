@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SuperWeb - Plataforma Profesional</title>
+  <title>SuperWeb 🚀</title>
   <style>
     :root {
       --primary-blue: #004488;
       --accent-orange: #f39c12;
-      --bg-color: #CCE0FF; /* Tu mezcla de 80% blanco y 20% azul */
+      --bg-color: #CCE0FF;
       --card-bg: #ffffff;
       --text-color: #333333;
     }
@@ -20,7 +20,6 @@
       color: var(--text-color);
     }
 
-    /* Barra Superior */
     .top-bar {
       background-color: #ffffff;
       padding: 15px 30px;
@@ -57,7 +56,6 @@
       background-color: #d68910;
     }
 
-    /* Hero Section */
     .hero {
       background-color: var(--primary-blue);
       color: white;
@@ -82,7 +80,6 @@
 
     .cta-btn:hover { opacity: 0.9; }
 
-    /* Contenedor de Secciones */
     .content-section {
       display: none;
       max-width: 1000px;
@@ -99,6 +96,17 @@
       border-bottom: 2px solid #99c2ff;
       padding-bottom: 8px;
       font-weight: bold;
+    }
+
+    .search-bar {
+      width: 100%;
+      padding: 12px 15px;
+      margin-bottom: 20px;
+      border: 2px solid var(--primary-blue);
+      border-radius: 5px;
+      font-size: 15px;
+      box-sizing: border-box;
+      outline: none;
     }
 
     .cards-grid {
@@ -144,11 +152,8 @@
       background-color: #c0392b;
     }
 
-    .card-btn:hover {
-      opacity: 0.9;
-    }
+    .card-btn:hover { opacity: 0.9; }
 
-    /* Studio */
     .studio-box {
       background: white;
       padding: 30px;
@@ -188,7 +193,7 @@
     </div>
   </div>
 
-  <!-- PESTAÑA 1: INICIO -->
+  <!-- PESTAÑA 1: INICIO (Red Global) -->
   <div id="inicioTab" class="content-section active">
     <div class="hero">
       <h1>Red Global de SuperWeb</h1>
@@ -198,6 +203,7 @@
 
     <div style="margin-top: 40px;">
       <div class="section-title">Páginas Publicadas en SuperWeb</div>
+      <input type="text" id="searchGlobal" class="search-bar" placeholder="🔍 Buscar proyectos en la red global..." oninput="filtrarRedGlobal()">
       <div class="cards-grid" id="publicWebsContainer">
         <div class="card">
           <h3>Cargando proyectos de la red...</h3>
@@ -206,17 +212,18 @@
     </div>
   </div>
 
-  <!-- PESTAÑA 2: MIS WEBS -->
+  <!-- PESTAÑA 2: MIS WEBS (LocalStorage) -->
   <div id="misWebsTab" class="content-section">
-    <div class="section-title">Mis Páginas Creadas</div>
+    <div class="section-title">Mis Páginas (Guardadas en tu Dispositivo)</div>
+    <input type="text" id="searchLocal" class="search-bar" placeholder="🔍 Buscar en mis proyectos..." oninput="filtrarMisWebs()">
     <div class="cards-grid" id="misWebsContainer">
-      <!-- Se cargan dinámicamente -->
+      <!-- Se cargan desde LocalStorage -->
     </div>
   </div>
 
   <!-- PESTAÑA 3: STUDIO -->
   <div id="studioTab" class="content-section">
-    <div class="section-title" id="studioTitle">Studio de Creación de SuperWeb</div>
+    <div class="section-title" id="studioTitle">Studio de Creación</div>
     <div class="studio-box">
       <input type="hidden" id="editIndex" value="-1">
       
@@ -229,14 +236,16 @@
       <label><strong>Código HTML de tu Web:</strong></label>
       <textarea id="webCode" class="code-editor" rows="8" placeholder="&lt;h1&gt;Hola Mundo&lt;/h1&gt;"></textarea>
       
-      <button class="cta-btn" id="saveBtn" onclick="publicarProyectoSuperWeb()">Publicar en la Red de SuperWeb</button>
+      <button class="cta-btn" id="saveBtn" onclick="publicarYGuardar()">Publicar Proyecto</button>
     </div>
   </div>
 
   <script>
-    // Credenciales integradas de forma interna (invisibles para el usuario final en la interfaz)
     const BIN_ID = "6ae7b0aaac6210605a6454c6";
     const API_KEY = "$2a$10$f2EuA6ubrwz7RU8ektbbV.xBsX2vSy7MF736KP7iKiqwc3iczwc6y";
+
+    let proyectosGlobalesCache = [];
+    let proyectosLocalesCache = [];
 
     function switchTab(evt, tabId) {
       const sections = document.querySelectorAll('.content-section');
@@ -246,27 +255,114 @@
       buttons.forEach(btn => btn.classList.remove('active'));
 
       document.getElementById(tabId).classList.add('active');
-      evt.currentTarget.classList.add('active');
+      if (evt && evt.currentTarget) evt.currentTarget.classList.add('active');
 
-      if(tabId === 'inicioTab' || tabId === 'misWebsTab') {
-        cargarWebsDeRed();
+      if (tabId === 'inicioTab') cargarRedGlobal();
+      if (tabId === 'misWebsTab') cargarMisWebsLocales();
+    }
+
+    // --- MANEJO DE LOCALSTORAGE ---
+
+    function obtenerLocales() {
+      const datos = localStorage.getItem('superweb_local_projects');
+      return datos ? JSON.parse(datos) : [];
+    }
+
+    function cargarMisWebsLocales() {
+      proyectosLocalesCache = obtenerLocales();
+      renderizarMisWebs(proyectosLocalesCache);
+    }
+
+    function renderizarMisWebs(proyectos) {
+      const contenedor = document.getElementById('misWebsContainer');
+
+      if (proyectos.length === 0) {
+        contenedor.innerHTML = '<p>No tienes páginas creadas o no se encontraron resultados.</p>';
+        return;
+      }
+
+      contenedor.innerHTML = '';
+      proyectos.forEach((proj, idx) => {
+        contenedor.innerHTML += `
+          <div class="card">
+            <h3>${proj.title}</h3>
+            <div class="card-body">
+              <p>${proj.desc}</p>
+              <small style="color: #666;">Fecha: ${proj.fecha}</small><br><br>
+              <button class="card-btn" onclick="editarLocal(${idx})">Editar</button>
+              <button class="card-btn danger" onclick="eliminarLocal(${idx})">Eliminar</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function filtrarMisWebs() {
+      const query = document.getElementById('searchLocal').value.toLowerCase();
+      const filtrados = proyectosLocalesCache.filter(p => 
+        p.title.toLowerCase().includes(query) || p.desc.toLowerCase().includes(query)
+      );
+      renderizarMisWebs(filtrados);
+    }
+
+    function editarLocal(index) {
+      const proyectos = obtenerLocales();
+      const proj = proyectos[index];
+
+      document.getElementById('editIndex').value = index;
+      document.getElementById('webTitle').value = proj.title;
+      document.getElementById('webDesc').value = proj.desc;
+      document.getElementById('webCode').value = proj.code;
+
+      document.getElementById('studioTitle').innerText = "Studio - Editando Proyecto";
+      document.getElementById('saveBtn').innerText = "Actualizar Proyecto";
+      switchTab(null, 'studioTab');
+    }
+
+    function eliminarLocal(index) {
+      if (confirm("¿Seguro que deseas eliminar esta página local?")) {
+        let proyectos = obtenerLocales();
+        proyectos.splice(index, 1);
+        localStorage.setItem('superweb_local_projects', JSON.stringify(proyectos));
+        cargarMisWebsLocales();
       }
     }
 
-    // Publicar proyecto a través de la infraestructura interna de SuperWeb
-    async function publicarProyectoSuperWeb() {
+    function limpiarFormulario() {
+      document.getElementById('webTitle').value = '';
+      document.getElementById('webDesc').value = '';
+      document.getElementById('webCode').value = '';
+      document.getElementById('editIndex').value = "-1";
+      document.getElementById('studioTitle').innerText = "Studio de Creación";
+      document.getElementById('saveBtn').innerText = "Publicar Proyecto";
+    }
+
+    // --- ACCIÓN DUAL: GUARDAR LOCAL Y PUBLICAR GLOBAL ---
+
+    async function publicarYGuardar() {
       const title = document.getElementById('webTitle').value;
       const desc = document.getElementById('webDesc').value;
       const code = document.getElementById('webCode').value;
       const editIndex = document.getElementById('editIndex').value;
 
-      if(!title) {
-        alert("¡Ponle un título a tu web!");
+      if (!title) {
+        alert("¡Ingresa un título antes de publicar!");
         return;
       }
 
-      const nuevoProyecto = { title, desc, code, fecha: new Date().toLocaleDateString() };
+      const fecha = new Date().toLocaleDateString();
+      const proyectoData = { title, desc, code, fecha };
 
+      // 1. Guardar en dispositivo (localStorage)
+      let locales = obtenerLocales();
+      if (editIndex === "-1") {
+        locales.push(proyectoData);
+      } else {
+        locales[editIndex] = proyectoData;
+      }
+      localStorage.setItem('superweb_local_projects', JSON.stringify(locales));
+
+      // 2. Enviar a la Red Global (JSONBin)
       try {
         const getRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
           headers: { 'X-Master-Key': API_KEY }
@@ -274,18 +370,9 @@
         const getData = await getRes.json();
         let listaProyectos = getData.record.projects || [];
 
-        if(editIndex === "-1") {
-          listaProyectos.push(nuevoProyecto);
-          alert('¡Proyecto publicado con éxito en la red de SuperWeb!');
-        } else {
-          listaProyectos[editIndex] = nuevoProyecto;
-          alert('¡Proyecto actualizado con éxito!');
-          document.getElementById('editIndex').value = "-1";
-          document.getElementById('studioTitle').innerText = "Studio de Creación de SuperWeb";
-          document.getElementById('saveBtn').innerText = "Publicar en la Red de SuperWeb";
-        }
+        listaProyectos.push(proyectoData);
 
-        const putRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+        await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -294,117 +381,68 @@
           body: JSON.stringify({ projects: listaProyectos })
         });
 
-        if(putRes.ok) {
-          document.getElementById('webTitle').value = '';
-          document.getElementById('webDesc').value = '';
-          document.getElementById('webCode').value = '';
-          switchTab({ currentTarget: document.querySelectorAll('.nav-btn')[0] }, 'inicioTab');
-        } else {
-          alert('Hubo un error al guardar en los servidores.');
-        }
+        alert('¡Proyecto guardado en tu dispositivo y publicado en la Red Global!');
+        limpiarFormulario();
+        switchTab(null, 'inicioTab');
       } catch (error) {
-        console.error("Error:", error);
-        alert('Error de conexión con la red de SuperWeb.');
+        console.error(error);
+        alert('Se guardó en tu dispositivo, pero hubo un detalle de conexión con la red global.');
+        limpiarFormulario();
+        switchTab(null, 'misWebsTab');
       }
     }
 
-    // Cargar proyectos de la red en la interfaz
-    async function cargarWebsDeRed() {
-      const inicioContenedor = document.getElementById('publicWebsContainer');
-      const misWebsContenedor = document.getElementById('misWebsContainer');
+    // --- MANEJO DE RED GLOBAL ---
 
+    async function cargarRedGlobal() {
+      const contenedor = document.getElementById('publicWebsContainer');
       try {
         const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
           headers: { 'X-Master-Key': API_KEY }
         });
         const data = await res.json();
-        const proyectos = data.record.projects || [];
-
-        if(proyectos.length === 0) {
-          inicioContenedor.innerHTML = '<p>No hay proyectos publicados todavía.</p>';
-          misWebsContenedor.innerHTML = '<p>No has creado ningún proyecto.</p>';
-          return;
-        }
-
-        // Renderizar Inicio Global
-        inicioContenedor.innerHTML = '';
-        proyectos.forEach(proj => {
-          inicioContenedor.innerHTML += `
-            <div class="card">
-              <h3>${proj.title}</h3>
-              <div class="card-body">
-                <p>${proj.desc}</p>
-                <small style="color: #666;">Publicado: ${proj.fecha}</small><br><br>
-                <button class="card-btn" onclick="alert('Código:\\n${encodeURIComponent(proj.code)}')">Ver Código</button>
-              </div>
-            </div>
-          `;
-        });
-
-        // Renderizar Mis Webs (Con opciones de gestión)
-        misWebsContenedor.innerHTML = '';
-        proyectos.forEach((proj, idx) => {
-          misWebsContenedor.innerHTML += `
-            <div class="card">
-              <h3>${proj.title}</h3>
-              <div class="card-body">
-                <p>${proj.desc}</p>
-                <small style="color: #666;">Publicado: ${proj.fecha}</small><br><br>
-                <button class="card-btn" onclick="prepararEdicion(${idx}, '${encodeURIComponent(proj.title)}', '${encodeURIComponent(proj.desc)}', '${encodeURIComponent(proj.code)}')">Editar</button>
-                <button class="card-btn danger" onclick="eliminarProyecto(${idx})">Eliminar</button>
-              </div>
-            </div>
-          `;
-        });
+        proyectosGlobalesCache = data.record.projects || [];
+        renderizarRedGlobal(proyectosGlobalesCache);
       } catch (error) {
-        inicioContenedor.innerHTML = '<p>Error al sincronizar con la red de SuperWeb.</p>';
-        misWebsContenedor.innerHTML = '<p>Error al sincronizar con la red de SuperWeb.</p>';
+        contenedor.innerHTML = '<p>Error al cargar los datos de la red global.</p>';
       }
     }
 
-    function prepararEdicion(idx, title, desc, code) {
-      document.getElementById('editIndex').value = idx;
-      document.getElementById('webTitle').value = decodeURIComponent(title);
-      document.getElementById('webDesc').value = decodeURIComponent(desc);
-      document.getElementById('webCode').value = decodeURIComponent(code);
+    function renderizarRedGlobal(proyectos) {
+      const contenedor = document.getElementById('publicWebsContainer');
 
-      document.getElementById('studioTitle').innerText = "Studio - Editando Proyecto";
-      document.getElementById('saveBtn').innerText = "Actualizar en SuperWeb";
-
-      switchTab({ currentTarget: document.querySelectorAll('.nav-btn')[2] }, 'studioTab');
-    }
-
-    async function eliminarProyecto(idx) {
-      if(confirm("¿Estás seguro de eliminar este proyecto de la red?")) {
-        try {
-          const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-            headers: { 'X-Master-Key': API_KEY }
-          });
-          const data = await res.json();
-          let proyectos = data.record.projects || [];
-
-          proyectos.splice(idx, 1);
-
-          await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Master-Key': API_KEY
-            },
-            body: JSON.stringify({ projects: proyectos })
-          });
-
-          cargarWebsDeRed();
-          alert("Proyecto eliminado con éxito.");
-        } catch (error) {
-          alert("Error al eliminar el proyecto.");
-        }
+      if (proyectos.length === 0) {
+        contenedor.innerHTML = '<p>No hay proyectos compartidos en la red todavía.</p>';
+        return;
       }
+
+      contenedor.innerHTML = '';
+      proyectos.forEach(proj => {
+        contenedor.innerHTML += `
+          <div class="card">
+            <h3>${proj.title}</h3>
+            <div class="card-body">
+              <p>${proj.desc}</p>
+              <small style="color: #666;">Publicado: ${proj.fecha}</small><br><br>
+              <button class="card-btn" onclick="alert('Código HTML:\\n\\n' + decodeURIComponent('${encodeURIComponent(proj.code)}'))">Ver Código</button>
+            </div>
+          </div>
+        `;
+      });
     }
 
-    window.onload = cargarWebsDeRed;
+    function filtrarRedGlobal() {
+      const query = document.getElementById('searchGlobal').value.toLowerCase();
+      const filtrados = proyectosGlobalesCache.filter(p =>
+        p.title.toLowerCase().includes(query) || p.desc.toLowerCase().includes(query)
+      );
+      renderizarRedGlobal(filtrados);
+    }
+
+    window.onload = function() {
+      cargarRedGlobal();
+    };
   </script>
 
 </body>
 </html>
-
