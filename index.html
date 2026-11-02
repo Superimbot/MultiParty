@@ -346,13 +346,38 @@
       const code = document.getElementById('webCode').value;
       if (!code.trim()) return alert("Escribe algo de código HTML primero.");
       const win = window.open();
-      win.document.write(code);
+      win.document.write(`
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Previsualización - SuperWeb</title>
+        </head>
+        <body>
+          ${code}
+        </body>
+        </html>
+      `);
       win.document.close();
     }
 
     function verWeb(codigoCodificado) {
       const win = window.open();
-      win.document.write(decodeURIComponent(codigoCodificado));
+      const codigoDecodificado = decodeURIComponent(codigoCodificado);
+      win.document.write(`
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Vista Previa - SuperWeb</title>
+        </head>
+        <body>
+          ${codigoDecodificado}
+        </body>
+        </html>
+      `);
       win.document.close();
     }
 
@@ -477,5 +502,6 @@
 
 </body>
 </html>
+
 
 
