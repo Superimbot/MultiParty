@@ -342,69 +342,59 @@
       document.getElementById('saveBtn').innerText = "Publicar Proyecto";
     }
 
-        function ejecutarCodigo() {
-      const code = document.getElementById('webCode').value;
-      if (!code.trim()) return alert("Escribe algo de código HTML primero.");
-      const win = window.open();
-      win.document.write(`
-        <!DOCTYPE html>
-        <html lang="es">
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Previsualización - SuperWeb</title>
-          <style>
-            /* Forzar que la previsualización use toda la pantalla y luzca natural */
-            body { margin: 0; background-color: #ffffff; }
-          </style>
-        </head>
-        <body>
-          ${code}
-        </body>
-        </html>
-      `);
-      win.document.close();
+    // --- SISTEMA DE MODAL FLOTANTE PARA VISTA WEB PERFECTA ---
+    function asegurarModalEnDOM() {
+      let modal = document.getElementById('superWebModal');
+      if (!modal) {
+        const modalHTML = `
+          <div id="superWebModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
+            <div style="background:white; width:92vw; height:90vh; border-radius:8px; display:flex; flex-direction:column; overflow:hidden; box-shadow: 0 5px 25px rgba(0,0,0,0.5);">
+              <div style="background:#004488; color:white; padding:12px 20px; display:flex; justify-content:space-between; align-items:center;">
+                <span id="modalTitle" style="font-weight:bold; font-size:16px;">Vista Previa - SuperWeb</span>
+                <button onclick="cerrarModalWeb()" style="background:#c0392b; color:white; border:none; padding:6px 14px; font-weight:bold; cursor:pointer; border-radius:4px; font-size:13px;">Cerrar ✕</button>
+              </div>
+              <iframe id="modalIframe" style="width:100%; height:100%; border:none; background:white;"></iframe>
+            </div>
+          </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+      }
     }
 
-        function verWeb(codigoCodificado) {
-      const win = window.open();
+    function ejecutarCodigo() {
+      const code = document.getElementById('webCode').value;
+      if (!code.trim()) return alert("Escribe algo de código HTML primero.");
+      
+      asegurarModalEnDOM();
+      document.getElementById('modalTitle').innerText = "Previsualización del Studio";
+      const iframe = document.getElementById('modalIframe');
+      document.getElementById('superWebModal').style.display = 'flex';
+      
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      doc.open();
+      doc.write(code);
+      doc.close();
+    }
+
+    function verWeb(codigoCodificado) {
       const codigoDecodificado = decodeURIComponent(codigoCodificado);
-      win.document.write(`
-        <!DOCTYPE html>
-        <html lang="es">
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Vista Completa - SuperWeb</title>
-          <style>
-            /* ESTO FORZA A QUE CUALQUIER CONTENEDOR LLENE LA PANTALLA */
-            body { 
-              margin: 0; 
-              background-color: #ffffff; 
-              display: flex;
-              justify-content: center;
-              align-items: flex-start;
-            }
-            /* Si el artículo tiene una caja central, la expandimos al 100% */
-            div, article, section {
-              max-width: 100% !important;
-              width: 100% !important;
-              box-shadow: none !important;
-              border: none !important;
-              border-radius: 0 !important;
-              margin: 0 !important;
-              padding: 30px !important;
-              box-sizing: border-box;
-            }
-          </style>
-        </head>
-        <body>
-          ${codigoDecodificado}
-        </body>
-        </html>
-      `);
-      win.document.close();
-        }
+      
+      asegurarModalEnDOM();
+      document.getElementById('modalTitle').innerText = "Vista Completa de SuperWeb";
+      const iframe = document.getElementById('modalIframe');
+      document.getElementById('superWebModal').style.display = 'flex';
+      
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      doc.open();
+      doc.write(codigoDecodificado);
+      doc.close();
+    }
+
+    function cerrarModalWeb() {
+      const modal = document.getElementById('superWebModal');
+      if (modal) modal.style.display = 'none';
+    }
+    // --------------------------------------------------------
 
     async function publicarYGuardar() {
       const title = document.getElementById('webTitle').value;
@@ -527,6 +517,3 @@
 
 </body>
 </html>
-
-
-
