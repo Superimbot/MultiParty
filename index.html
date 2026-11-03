@@ -64,6 +64,9 @@
             color: #ffea00; font-size: 18px; font-weight: bold; pointer-events: none; z-index: 5;
             text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
+        #music-control {
+            position: absolute; top: 15px; right: 15px; z-index: 6; display: flex; gap: 5px;
+        }
         #music-info {
             position: absolute; bottom: 90px; left: 20px; font-size: 11px; color: #a5f3f3;
             background: rgba(13, 4, 20, 0.7); padding: 5px 10px; border-radius: 6px; z-index: 5;
@@ -84,6 +87,10 @@
     </style>
 </head>
 <body>
+
+    <div id="music-control">
+        <button id="btn-toggle-music" class="btn-main" style="padding: 8px 12px; font-size: 11px; background: #ffea00; color: #07020d;">🎵 Play / Siguiente</button>
+    </div>
 
     <div id="lobby-overlay">
         <h1>MULTIPARTY</h1>
@@ -137,12 +144,10 @@
         <div>ESTADO: <span id="timer" style="color: #00ffaa;">3</span>s</div>
     </div>
     <div id="event-banner">CONFIGURA TU PARTIDA</div>
-    <div id="music-info">♪ BGM: Tobu Playlist</div>
+    <div id="music-info">♪ BGM: Tobu Playlist (Pulsa Play)</div>
 
     <canvas id="gameCanvas"></canvas>
-
-    <!-- Elemento de audio dinámico para la música -->
-    <audio id="game-audio"></audio>
+    <audio id="game-audio" preload="auto"></audio>
 
     <div class="touch-controls">
         <div class="d-pad">
@@ -171,36 +176,39 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // --- PLAYLIST DE TOBU Y NCS ---
+        // --- PLAYLIST DE TOBU LOCAL (Sube tus MP3 a tu repo de GitHub con estos nombres) ---
         const playlist = [
-            { name: "Tobu - Candyland", src: "https://ncsprod.s3.amazonaws.com/tracks/115/preview.mp3" },
-            { name: "Tobu - Cloud 9", src: "https://ncsprod.s3.amazonaws.com/tracks/27/preview.mp3" },
-            { name: "Tobu - Sunburst", src: "https://ncsprod.s3.amazonaws.com/tracks/178/preview.mp3" },
-            { name: "Tobu - Infectious", src: "https://ncsprod.s3.amazonaws.com/tracks/92/preview.mp3" },
-            { name: "Tobu - Roots", src: "https://ncsprod.s3.amazonaws.com/tracks/434/preview.mp3" },
-            { name: "Tobu - Hope", src: "https://ncsprod.s3.amazonaws.com/tracks/83/preview.mp3" },
-            { name: "Tobu - Life", src: "https://ncsprod.s3.amazonaws.com/tracks/149/preview.mp3" },
-            { name: "Tobu - Fantasy", src: "https://ncsprod.s3.amazonaws.com/tracks/114/preview.mp3" }
+            { name: "Tobu - Candyland", src: "candyland.mp3" },
+            { name: "Tobu - Cloud 9", src: "cloud9.mp3" },
+            { name: "Tobu - Sunburst", src: "sunburst.mp3" },
+            { name: "Tobu - Infectious", src: "infectious.mp3" },
+            { name: "Tobu - Roots", src: "roots.mp3" },
+            { name: "Tobu - Hope", src: "hope.mp3" },
+            { name: "Tobu - Life", src: "life.mp3" },
+            { name: "Tobu - Fantasy", src: "fantasy.mp3" }
         ];
 
         let currentTrackIndex = 0;
         const audioElement = document.getElementById('game-audio');
-        audioElement.volume = 0.35; // Volumen agradable
+        audioElement.volume = 0.4;
 
-        function playPlaylist() {
+        function playNextTrack() {
             if (playlist.length === 0) return;
             const track = playlist[currentTrackIndex];
             audioElement.src = track.src;
             document.getElementById('music-info').innerText = "♪ BGM: " + track.name;
             
-            audioElement.play().catch(e => console.log("Audio bloqueado hasta interacción"));
-
-            // Al terminar una canción, pasa automáticamente a la siguiente de la lista
-            audioElement.onended = () => {
-                currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
-                playPlaylist();
-            };
+            audioElement.play().catch(e => console.log("Audio en espera de interacción."));
+            currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
         }
+
+        document.getElementById('btn-toggle-music').addEventListener('click', () => {
+            playNextTrack();
+        });
+
+        audioElement.onended = () => {
+            playNextTrack();
+        };
 
         const badWords = ["puta", "mierda", "estupido", "estúpida", "pendejo", "pendeja", "puto", "carajo", "bastardo", "bitch", "fuck", "asshole"];
         function filterText(text) {
@@ -243,6 +251,7 @@
 
         const input = { left: false, right: false, jump: false };
 
+        // Controles de teclado para PC
         window.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') input.left = true;
             if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') input.right = true;
@@ -261,7 +270,6 @@
         });
 
         document.getElementById('btn-create').addEventListener('click', () => {
-            playPlaylist(); // Inicia la música de Tobu al crear sala
             const type = document.getElementById('room-type').value;
             let code = type === 'private' 
                 ? Math.floor(1000 + Math.random() * 9000).toString() 
@@ -271,7 +279,6 @@
         });
 
         document.getElementById('btn-join').addEventListener('click', () => {
-            playPlaylist(); // Inicia la música de Tobu al unirse a sala
             const code = document.getElementById('room-code-input').value.trim().toUpperCase();
             if (code) joinRoom(code, false);
         });
@@ -441,7 +448,7 @@
                 Object.keys(botList).forEach(bId => {
                     let bot = botList[bId];
                     
-                    bot.actionTimer++;
+                    bot.actitionTimer++;
                     if (bot.actionTimer > Math.random() * 80 + 30) {
                         bot.actionTimer = 0;
                         const randChoice = Math.random();
@@ -522,6 +529,7 @@
             requestAnimationFrame(gameLoop);
         }
 
+        // Controles táctiles móviles
         const bindTouch = (id, key) => {
             const btn = document.getElementById(id);
             if (!btn) return;
@@ -537,7 +545,7 @@
         bindTouch('btn-jump', 'jump');
     </script>
 </body>
-<html>
+</html>
     
 
   
