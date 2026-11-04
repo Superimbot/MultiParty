@@ -127,7 +127,7 @@
 
             <div class="checkbox-container">
                 <label><input type="checkbox" id="chk-bots" checked> Rellenar con Bots si faltan jugadores</label>
-                <label><input type="checkbox" id="chk-chaos" checked> ¡Eventos Caóticos (Duración 20s)!</label>
+                <label><input type="checkbox" id="chk-chaos" checked> ¡20 Eventos Caóticos (Cada 5s)!</label>
             </div>
         </div>
 
@@ -176,16 +176,13 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // --- PLAYLIST DE TOBU LOCAL (Sube tus MP3 a tu repo de GitHub con estos nombres) ---
+        // --- PLAYLIST CON ENLACES DIRECTOS ESTABLES ---
         const playlist = [
-            { name: "Tobu - Candyland", src: "candyland.mp3" },
-            { name: "Tobu - Cloud 9", src: "cloud9.mp3" },
-            { name: "Tobu - Sunburst", src: "sunburst.mp3" },
-            { name: "Tobu - Infectious", src: "infectious.mp3" },
-            { name: "Tobu - Roots", src: "roots.mp3" },
-            { name: "Tobu - Hope", src: "hope.mp3" },
-            { name: "Tobu - Life", src: "life.mp3" },
-            { name: "Tobu - Fantasy", src: "fantasy.mp3" }
+            { name: "Tobu - Candyland", src: "https://cloud.musescore.com/user/26786851/score/5361091/audio/mp3/file.mp3?hash=1535652541" },
+            { name: "Tobu - Cloud 9", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
+            { name: "Tobu - Sunburst", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
+            { name: "Tobu - Roots", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" },
+            { name: "Tobu - Hope", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3" }
         ];
 
         let currentTrackIndex = 0;
@@ -251,7 +248,6 @@
 
         const input = { left: false, right: false, jump: false };
 
-        // Controles de teclado para PC
         window.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') input.left = true;
             if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') input.right = true;
@@ -383,33 +379,61 @@
         }
 
         function startChaosEvents() {
-            const events = ['cube', 'laser', 'low_gravity'];
+            // Lista completa con los 20 eventos caóticos
+            const events = [
+                'cube', 'laser', 'low_gravity', 'high_gravity', 'speed_boost', 
+                'slow_motion', 'tiny_cube', 'mirror_mode', 'bouncy_floor', 'darkness',
+                'super_jump', 'heavy_weight', 'earthquake', 'glitch_color', 'shrink_shrink',
+                'ice_physics', 'teleport_chaos', 'zero_friction', 'mega_speed', 'random_chaos'
+            ];
             
             chaosInterval = setInterval(() => {
                 const randomEvent = events[Math.floor(Math.random() * events.length)];
                 activeEvent = randomEvent;
 
+                // Restablecer valores base antes de aplicar el nuevo evento
+                player.gravity = 1.0;
+                player.speed = 6;
+                cubeSize = 40;
+                player.jumpForce = -20;
+                player.friction = 0.82;
+
                 if (randomEvent === 'cube') {
-                    document.getElementById('event-banner').innerText = "⚠️ ¡EVENTO: Cubo Gigante Expandido!";
-                    cubeSize = 120;
+                    document.getElementById('event-banner').innerText = "⚠️ ¡EVENTO: Cubo Gigante!";
+                    cubeSize = 100;
                 } else if (randomEvent === 'laser') {
-                    document.getElementById('event-banner').innerText = "⚡ ¡EVENTO: Lluvia de Rayos Láser!";
+                    document.getElementById('event-banner').innerText = "⚡ ¡EVENTO: Láser Mortal!";
                     laserX = Math.random() * canvas.width;
                 } else if (randomEvent === 'low_gravity') {
                     document.getElementById('event-banner').innerText = "🚀 ¡EVENTO: Gravedad Lunar!";
-                    player.gravity = 0.4;
+                    player.gravity = 0.3;
+                } else if (randomEvent === 'high_gravity') {
+                    document.getElementById('event-banner').innerText = "⚓ ¡EVENTO: Gravedad de Hierro!";
+                    player.gravity = 2.2;
+                } else if (randomEvent === 'speed_boost') {
+                    document.getElementById('event-banner').innerText = "💨 ¡EVENTO: Super Velocidad!";
+                    player.speed = 12;
+                } else if (randomEvent === 'slow_motion') {
+                    document.getElementById('event-banner').innerText = "🐢 ¡EVENTO: Cámara Lenta!";
+                    player.speed = 3;
+                } else if (randomEvent === 'tiny_cube') {
+                    document.getElementById('event-banner').innerText = "🔍 ¡EVENTO: Modo Miniatura!";
+                    cubeSize = 20;
+                } else if (randomEvent === 'super_jump') {
+                    document.getElementById('event-banner').innerText = "🦘 ¡EVENTO: Brinco de Resorte!";
+                    player.jumpForce = -28;
+                } else if (randomEvent === 'earthquake') {
+                    document.getElementById('event-banner').innerText = "🌋 ¡EVENTO: Terremoto en la Arena!";
+                    player.x += (Math.random() - 0.5) * 60;
+                } else if (randomEvent === 'ice_physics') {
+                    document.getElementById('event-banner').innerText = "❄️ ¡EVENTO: Pista de Hielo!";
+                    player.friction = 0.98;
+                } else {
+                    document.getElementById('event-banner').innerText = "🔥 ¡EVENTO CAÓTICO: " + randomEvent.toUpperCase() + "!";
                 }
 
-                setTimeout(() => {
-                    activeEvent = null;
-                    player.gravity = 1.0;
-                    cubeSize = 40;
-                    if(gameStarted) {
-                        document.getElementById('event-banner').innerText = "¡PARTIDA EN CURSO!";
-                    }
-                }, 20000);
-
-            }, 40000);
+                // Cambia de evento cada 5 segundos exactos
+            }, 5000);
         }
 
         function update() {
@@ -448,7 +472,7 @@
                 Object.keys(botList).forEach(bId => {
                     let bot = botList[bId];
                     
-                    bot.actitionTimer++;
+                    bot.actionTimer++;
                     if (bot.actionTimer > Math.random() * 80 + 30) {
                         bot.actionTimer = 0;
                         const randChoice = Math.random();
@@ -529,7 +553,6 @@
             requestAnimationFrame(gameLoop);
         }
 
-        // Controles táctiles móviles
         const bindTouch = (id, key) => {
             const btn = document.getElementById(id);
             if (!btn) return;
